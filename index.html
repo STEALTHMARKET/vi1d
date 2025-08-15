@@ -13,12 +13,14 @@
         align-items: center;
         overflow: hidden;
         font-family: 'Poppins', sans-serif;
+        cursor: none; /* optional, für clean look */
     }
     h1 {
         font-size: 5em;
         color: white;
         text-shadow: 0 0 20px rgba(255, 0, 102, 0.8), 0 0 40px rgba(255, 0, 102, 0.6);
         animation: pulse 2s infinite;
+        z-index: 2;
     }
     @keyframes pulse {
         0%, 100% { transform: scale(1); }
@@ -30,7 +32,8 @@
         height: 20px;
         background: red;
         transform: rotate(45deg);
-        animation: floatUp 5s linear infinite;
+        animation: floatUp 5s linear forwards;
+        pointer-events: none;
     }
     .heart::before,
     .heart::after {
@@ -47,6 +50,26 @@
         0% { transform: translateY(0) rotate(45deg); opacity: 1; }
         100% { transform: translateY(-800px) rotate(45deg); opacity: 0; }
     }
+    .cursor-heart {
+        position: fixed;
+        width: 15px;
+        height: 15px;
+        background: red;
+        transform: rotate(45deg);
+        pointer-events: none;
+        z-index: 9999;
+    }
+    .cursor-heart::before,
+    .cursor-heart::after {
+        content: '';
+        position: absolute;
+        width: 15px;
+        height: 15px;
+        background: red;
+        border-radius: 50%;
+    }
+    .cursor-heart::before { top: -7.5px; left: 0; }
+    .cursor-heart::after { left: -7.5px; top: 0; }
 </style>
 </head>
 <body>
@@ -63,6 +86,17 @@
             setTimeout(() => heart.remove(), 5000);
         }
         setInterval(createHeart, 200);
+
+        // Cursor Herz Effekt
+        document.addEventListener('mousemove', e => {
+            const cHeart = document.createElement('div');
+            cHeart.className = 'cursor-heart';
+            cHeart.style.left = (e.pageX - 7.5) + 'px';
+            cHeart.style.top = (e.pageY - 7.5) + 'px';
+            cHeart.style.background = `hsl(${Math.random() * 360}, 70%, 60%)`;
+            document.body.appendChild(cHeart);
+            setTimeout(() => cHeart.remove(), 500);
+        });
     </script>
 </body>
 </html>
